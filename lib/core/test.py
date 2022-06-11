@@ -76,8 +76,9 @@ def im_detect_all(model, im, box_proposals=None, timers=None):
     # timers['misc_bbox'].tic()
     # scores, boxes, cls_boxes = box_results_with_nms_and_limit(scores, boxes)
     # timers['misc_bbox'].toc()
+    cls_boxes = None
 
-    return {'scores': scores, 'boxes' : boxes}
+    return {'scores': scores, 'boxes' : boxes, 'cls_boxes' : cls_boxes}
 
 
 def im_detect_bbox(model, im, target_scale, target_max_size, boxes=None):

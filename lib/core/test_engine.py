@@ -96,10 +96,11 @@ def run_inference(
             # single process or (if multi_gpu_testing is True) using this process to
             # launch subprocesses that each run inference on a range of the dataset
             all_results = {}
+            all_boxes = {}
             for i in range(len(cfg.TEST.DATASETS)):
                 dataset_name, proposal_file = get_inference_dataset(i)
                 output_dir = args.output_dir
-                results = parent_func(
+                results, boxes = parent_func(
                     args,
                     dataset_name,
                     proposal_file,
@@ -107,8 +108,9 @@ def run_inference(
                     multi_gpu=multi_gpu_testing
                 )
                 all_results.update(results)
+                all_boxes.update(boxes)
 
-            return all_results
+            return all_results, all_boxes
         else:
             # Subprocess child case:
             # In this case test_net was called via subprocess.Popen to execute on a
@@ -124,7 +126,7 @@ def run_inference(
                 gpu_id=gpu_id
             )
 
-    all_results = result_getter()
+    all_results, all_boxes = result_getter()
     if check_expected_results and is_parent:
         task_evaluation.check_expected_results(
             all_results,
@@ -133,7 +135,7 @@ def run_inference(
         )
         task_evaluation.log_copy_paste_friendly_results(all_results)
 
-    return all_results
+    return all_results, all_boxes
 
 
 def test_net_on_dataset(
@@ -164,18 +166,32 @@ def test_net_on_dataset(
     num_classes = cfg.MODEL.NUM_CLASSES + 1
     final_boxes = empty_results(num_classes, num_images)
     test_corloc = 'train' in dataset_name
-    for i, entry in enumerate(roidb):
+    all_res_score = []
+    all_res_box = []
+    all_res_cls_boxes = []
+    all_img = []
+    for i, entry in enumerate(roidb[:3]):
         boxes = all_boxes[entry['image']]
         if test_corloc:
-            _, _, cls_boxes_i = box_results_for_corloc(boxes['scores'], boxes['boxes'])
+            res_scores, res_boxes, cls_boxes_i = box_results_for_corloc(boxes['scores'], boxes['boxes'])
         else:
-            _, _, cls_boxes_i = box_results_with_nms_and_limit(boxes['scores'],
+            res_scores, res_boxes, cls_boxes_i = box_results_with_nms_and_limit(boxes['scores'],
                                                          boxes['boxes'])
+        all_res_score.append(res_scores)
+        all_res_box.append(res_boxes)
+        all_res_cls_boxes.append(cls_boxes_i)
+        all_img.append(entry['image'])
         extend_results(i, final_boxes, cls_boxes_i)
     results = task_evaluation.evaluate_all(
         dataset, final_boxes, output_dir, test_corloc
     )
-    return results
+    split_res = {
+        'all_res_score' : all_res_score,
+        'all_res_box' : all_res_box,
+        'all_res_cls_boxes' : all_res_cls_boxes,
+        'all_img' : all_img
+    }
+    return results, split_res
 
 
 def multi_gpu_test_net_on_dataset(
@@ -240,7 +256,7 @@ def test_net(
     num_classes = cfg.MODEL.NUM_CLASSES
     all_boxes = {}
     timers = defaultdict(Timer)
-    for i, entry in enumerate(roidb):
+    for i, entry in enumerate(roidb[:3]):
         if cfg.TEST.PRECOMPUTED_PROPOSALS:
             # The roidb may contain ground-truth rois (for example, if the roidb
             # comes from the training or val split). We only want to evaluate
@@ -257,6 +273,12 @@ def test_net(
 
         im = cv2.imread(entry['image'])
         cls_boxes_i = im_detect_all(model, im, box_proposals, timers)
+
+        # for i, boxes in enumerate(cls_boxes_i['cls_boxes']):
+        #     for b in boxes:
+        #         if b[-1] > 0.3:
+        #             im = cv2.rectangle(im, (int(b[2]), int(b[3])), (int(b[0]), int(b[1])), (0, 0, 255))
+        # cv2.imwrite("test.jpg", im)
 
         all_boxes[entry['image']] = cls_boxes_i
 

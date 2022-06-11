@@ -104,26 +104,26 @@ DATASETS = {
     },
     'voc_2007_trainval': {
         IM_DIR:
-            _DATA_DIR + '/VOC2007/JPEGImages',
+            '/data/dya/workspace/pcl_wsod/data/VOCdevkit/VOC2007/JPEGImages',
         ANN_FN:
-            _DATA_DIR + '/VOC2007/annotations/voc_2007_trainval.json',
+            '/data/dya/workspace/pcl_wsod/data/VOCdevkit/annotations/voc_2007_trainval.json',
         DEVKIT_DIR:
-            _DATA_DIR
+            '/data/dya/workspace/pcl_wsod/data/VOCdevkit/'
     },
     'voc_2007_test': {
         IM_DIR:
-            _DATA_DIR + '/VOC2007/JPEGImages',
+            '/data/dya/workspace/pcl_wsod/data/VOCdevkit/VOC2007/JPEGImages',
         ANN_FN:
-            _DATA_DIR + '/VOC2007/annotations/voc_2007_test.json',
+            '/data/dya/workspace/pcl_wsod/data/VOCdevkit/annotations/voc_2007_test.json',
         DEVKIT_DIR:
-            _DATA_DIR
+            '/data/dya/workspace/pcl_wsod/data/VOCdevkit/'
     },
     'voc_2012_trainval': {
         IM_DIR:
-            _DATA_DIR + '/VOC2012/JPEGImages',
+            '/data/dya/workspace/pcl_wsod/data/VOCdevkit/VOC2012/JPEGImages',
         ANN_FN:
-            _DATA_DIR + '/VOC2012/annotations/voc_2012_trainval.json',
+            '/data/dya/workspace/pcl_wsod/data/VOCdevkit/annotations/voc_2012_trainval.json',
         DEVKIT_DIR:
-            _DATA_DIR
+            '/data/dya/workspace/pcl_wsod/data/VOCdevkit/'
     }
 }

@@ -1,0 +1,14 @@
+
+
+VOCtest_06-Nov-2007.tar
+VOCtrainval_06-Nov-2007.tar
+VOCtrainval_11-May-2012.tar
+
+data
+data.tar
+
+*__pycache__
+
+data/drive-download-20220527T060022Z-001.zip
+
+Outputs

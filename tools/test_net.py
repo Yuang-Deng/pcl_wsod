@@ -23,21 +23,26 @@ def parse_args():
     """Parse in command line arguments"""
     parser = argparse.ArgumentParser(description='Test a Fast R-CNN network')
     parser.add_argument(
-        '--dataset',
+        '--dataset', default='voc2007test',
         help='training dataset')
     parser.add_argument(
-        '--cfg', dest='cfg_file', required=True,
+        '--cfg', dest='cfg_file', default='./configs/baselines/vgg16_voc2007.yaml',
         help='optional config file')
 
     parser.add_argument(
-        '--load_ckpt', help='path of checkpoint to load')
+        '--load_ckpt', help='path of checkpoint to load', 
+        default='./Outputs/vgg16_voc2007/May27-15-03-05_sjtu-Precision-5820-Tower_step/ckpt/model_step19999.pth',
+        )
     parser.add_argument(
-        '--load_detectron', help='path to the detectron weight pickle file')
+        '--load_detectron', help='path to the detectron weight pickle file',
+        # default='./Outputs/vgg16_voc2007/May27-15-03-05_sjtu-Precision-5820-Tower_step/ckpt/model_step19999.pth',
+        )
 
     parser.add_argument(
         '--output_dir',
         help='output directory to save the testing results. If not provided, '
-             'defaults to [args.load_ckpt|args.load_detectron]/../test.')
+             'defaults to [args.load_ckpt|args.load_detectron]/../test.',
+        default='./Outputs/vgg16_voc2007/May27-15-03-05_sjtu-Precision-5820-Tower_step/output')
 
     parser.add_argument(
         '--set', dest='set_cfgs',

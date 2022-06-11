@@ -1,6 +1,7 @@
 """ Training script for steps_with_decay policy"""
 
 import argparse
+from copy import copy
 import os
 import sys
 import pickle
@@ -11,18 +12,21 @@ from collections import defaultdict
 import random
 
 import numpy as np
+from mmcv import Config
 import yaml
 import torch
 from torch.autograd import Variable
 import torch.nn as nn
 import cv2
+import copy
 cv2.setNumThreads(0)  # pytorch issue 1355: possible deadlock in dataloader
 
 import _init_paths  # pylint: disable=unused-import
+from core.test_engine import run_inference, initialize_model_from_cfg
 import nn as mynn
 import utils.net as net_utils
 import utils.misc as misc_utils
-from core.config import cfg, cfg_from_file, cfg_from_list, assert_and_infer_cfg
+from core.config import cfg, cfg_from_file, cfg_from_list, assert_and_infer_cfg, merge_cfg_from_file, merge_cfg_from_list
 from datasets.roidb import combined_roidb_for_training
 from roi_data.loader import RoiDataLoader, MinibatchSampler, BatchSampler, collate_minibatch
 from modeling.model_builder import Generalized_RCNN
@@ -44,10 +48,10 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Train a X-RCNN network')
 
     parser.add_argument(
-        '--dataset', dest='dataset', required=True,
+        '--dataset', dest='dataset', default='voc2007',
         help='Dataset to use')
     parser.add_argument(
-        '--cfg', dest='cfg_file', required=True,
+        '--cfg', dest='cfg_file', default='./configs/baselines/vgg16_voc2007.yaml',
         help='Config file for training (and optionally testing)')
     parser.add_argument(
         '--set', dest='set_cfgs',
@@ -70,7 +74,7 @@ def parse_args():
         help='Explicitly specify to overwrite the value comed from cfg_file.',
         type=int)
     parser.add_argument(
-        '--nw', dest='num_workers',
+        '--nw', dest='num_workers', default=1,
         help='Explicitly specify to overwrite number of workers to load data. Defaults to 4',
         type=int)
     parser.add_argument(
@@ -134,6 +138,7 @@ def save_ckpt(output_dir, args, step, train_size, model, optimizer):
         'model': model.state_dict(),
         'optimizer': optimizer.state_dict()}, save_name)
     logger.info('save model: %s', save_name)
+    return save_name
 
 
 def main():
@@ -218,6 +223,7 @@ def main():
         cfg.SOLVER.BASE_LR = args.lr
     if args.lr_decay_gamma is not None:
         cfg.SOLVER.GAMMA = args.lr_decay_gamma
+    cfg.TEST.DATASETS = ('voc_2007_test',)
     assert_and_infer_cfg()
 
     timers = defaultdict(Timer)
@@ -424,8 +430,22 @@ def main():
 
             training_stats.LogIterStats(step, lr)
 
-            if (step+1) % CHECKPOINT_PERIOD == 0:
-                save_ckpt(output_dir, args, step, train_size, pcl, optimizer)
+            # if (step+1) % CHECKPOINT_PERIOD == 0:
+            # if True:
+            #     inference_args = Config.fromfile('./tools/test_cfg.py')
+            #     inference_args = inference_args.test_cfg
+                
+            #     save_path = save_ckpt(output_dir, args, step, train_size, pcl, optimizer)
+            #     inference_args.load_ckpt = save_path
+            #     res = run_inference(
+            #         inference_args,
+            #         ind_range=inference_args.range,
+            #         multi_gpu_testing=inference_args.multi_gpu_testing,
+            #         check_expected_results=True)
+            #     box, score, img = res[1]['all_res_box'], res[1]['all_res_score'], res[1]['all_img']
+                
+            #     pcl = initialize_model_from_cfg(args, gpu_id=0)
+                
 
         # ---- Training ends ----
         # Save last checkpoint

@@ -124,7 +124,7 @@ class JsonDataset(object):
             self._prep_roidb_entry(entry)
         if gt:
             # Include ground-truth object annotations
-            cache_filepath = os.path.join(self.cache_path, self.name+'_gt_roidb.pkl')
+            cache_filepath = os.path.join(self.cache_path, self.name+'_gt_roidb.pkl_old')
             if os.path.exists(cache_filepath) and not cfg.DEBUG:
                 self.debug_timer.tic()
                 logger.info('Loading cached gt_roidb from %s', cache_filepath)
